@@ -1,0 +1,41 @@
+{
+  "name": "sql-query-analyzer",
+  "version": "1.0.0",
+  "description": "A JavaScript library that analyzes SQL SELECT queries and returns the column names that would be in the result set without executing the query.",
+  "main": "sql-query-analyzer.js",
+  "scripts": {
+    "test": "node test-sql-analyzer.js",
+    "demo": "node demo.js",
+    "example": "node usage-example.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liyaquath-afnan/sql-query-analyzer.git"
+  },
+  "keywords": [
+    "sql",
+    "query",
+    "analyzer",
+    "parser",
+    "column",
+    "select",
+    "database",
+    "sql-parser",
+    "query-analyzer"
+  ],
+  "author": "Liyaquath Afnan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liyaquath-afnan/sql-query-analyzer/issues"
+  },
+  "homepage": "https://github.com/liyaquath-afnan/sql-query-analyzer#readme",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "sql-query-analyzer.js",
+    "README.md",
+    "demo.js",
+    "usage-example.js"
+  ]
+}
