@@ -196,13 +196,70 @@ class SQLQueryAnalyzer {
      * @returns {string} - Final column name
      */
     extractColumnName(columnExpr) {
+        const trimmedExpr = columnExpr.trim();
+        
+        // Handle table.* format (like abc.*)
+        if (trimmedExpr.includes('.*')) {
+            return 'all_columns'; // Placeholder for table.* - in real scenarios, this would need table schema info
+        }
+        
+        // Handle standalone asterisk
+        if (trimmedExpr === '*') {
+            return 'all_columns';
+        }
+
+        // Handle CASE statements
+        if (trimmedExpr.toUpperCase().startsWith('CASE')) {
+            // Look for the alias after END
+            const endIndex = trimmedExpr.toUpperCase().lastIndexOf('END');
+            if (endIndex !== -1) {
+                const afterEnd = trimmedExpr.substring(endIndex + 3).trim();
+                if (afterEnd) {
+                    // Handle quoted aliases like "AGED_Range"
+                    const quotedAliasMatch = afterEnd.match(/^"([^"]+)"$/);
+                    if (quotedAliasMatch) {
+                        return quotedAliasMatch[1];
+                    }
+                    
+                    // Handle AS keyword
+                    const asMatch = afterEnd.match(/^(?:AS\s+)?(["\w]+)$/i);
+                    if (asMatch) {
+                        let alias = asMatch[1];
+                        // Remove quotes if present
+                        if (alias.startsWith('"') && alias.endsWith('"')) {
+                            alias = alias.slice(1, -1);
+                        }
+                        return alias;
+                    }
+                    
+                    // Handle implicit alias
+                    const implicitMatch = afterEnd.match(/^(["\w]+)$/);
+                    if (implicitMatch) {
+                        let alias = implicitMatch[1];
+                        // Remove quotes if present
+                        if (alias.startsWith('"') && alias.endsWith('"')) {
+                            alias = alias.slice(1, -1);
+                        }
+                        return alias;
+                    }
+                }
+            }
+            return 'case_result'; // Default name for CASE without alias
+        }
+
         // Handle subqueries - if it starts with (, it's likely a subquery
-        if (columnExpr.trim().startsWith('(')) {
+        if (trimmedExpr.startsWith('(')) {
             // For subqueries, we need to check if there's an alias after the closing parenthesis
-            const lastParenIndex = columnExpr.lastIndexOf(')');
+            const lastParenIndex = trimmedExpr.lastIndexOf(')');
             if (lastParenIndex !== -1) {
-                const afterParen = columnExpr.substring(lastParenIndex + 1).trim();
+                const afterParen = trimmedExpr.substring(lastParenIndex + 1).trim();
                 if (afterParen) {
+                    // Handle quoted aliases
+                    const quotedAliasMatch = afterParen.match(/^"([^"]+)"$/);
+                    if (quotedAliasMatch) {
+                        return quotedAliasMatch[1];
+                    }
+                    
                     // Check for AS keyword or implicit alias
                     const asMatch = afterParen.match(/^(?:AS\s+)?(\w+)$/i);
                     if (asMatch) {
@@ -218,17 +275,32 @@ class SQLQueryAnalyzer {
             return 'subquery_result'; // Default name for subqueries without aliases
         }
 
+        // Handle quoted column names and aliases
+        const quotedAliasMatch = trimmedExpr.match(/^.+\s+"([^"]+)"$/);
+        if (quotedAliasMatch) {
+            return quotedAliasMatch[1];
+        }
+
         // Check for AS alias
-        const asRegex = /^(.+?)\s+AS\s+(\w+)$/i;
-        const asMatch = columnExpr.match(asRegex);
+        const asRegex = /^(.+?)\s+AS\s+(["\w]+)$/i;
+        const asMatch = trimmedExpr.match(asRegex);
         if (asMatch) {
-            return asMatch[2]; // Return the alias
+            let alias = asMatch[2];
+            // Remove quotes if present
+            if (alias.startsWith('"') && alias.endsWith('"')) {
+                alias = alias.slice(1, -1);
+            }
+            return alias;
         }
 
         // Check for implicit alias (space-separated)
-        const parts = columnExpr.split(/\s+/);
+        const parts = trimmedExpr.split(/\s+/);
         if (parts.length >= 2) {
             const lastPart = parts[parts.length - 1];
+            // Handle quoted identifiers
+            if (lastPart.startsWith('"') && lastPart.endsWith('"')) {
+                return lastPart.slice(1, -1);
+            }
             // Check if the last part is not a SQL keyword
             if (!this.sqlKeywords.has(lastPart.toUpperCase())) {
                 // Check if it looks like an identifier (not a number or operator)
@@ -250,13 +322,23 @@ class SQLQueryAnalyzer {
         // Handle table.column format
         const dotIndex = baseExpr.lastIndexOf('.');
         if (dotIndex !== -1) {
-            return baseExpr.substring(dotIndex + 1);
+            const columnName = baseExpr.substring(dotIndex + 1);
+            // Remove quotes if present
+            if (columnName.startsWith('"') && columnName.endsWith('"')) {
+                return columnName.slice(1, -1);
+            }
+            return columnName;
         }
 
         // Handle expressions with operators (like price * quantity)
         // For complex expressions without aliases, return a generic name
         if (/[+\-*/]/.test(baseExpr)) {
             return 'calculated_field';
+        }
+
+        // Handle quoted column names
+        if (baseExpr.startsWith('"') && baseExpr.endsWith('"')) {
+            return baseExpr.slice(1, -1);
         }
 
         // Return the column name as-is

@@ -20,6 +20,10 @@ npm i sql-query-analyzer
 - ✅ Supports subqueries in SELECT clauses
 - ✅ Handles JOINs and complex queries
 - ✅ Processes calculated fields and expressions
+- ✅ **NEW**: Handles CASE statements with proper alias detection
+- ✅ **NEW**: Supports quoted column aliases (e.g., `"Column_Name"`)
+- ✅ **NEW**: Handles table.* syntax (e.g., `abc.*`)
+- ✅ **NEW**: Improved parsing for complex multi-line queries
 - ✅ No query execution - pure parsing
 - ✅ Comprehensive error handling
 

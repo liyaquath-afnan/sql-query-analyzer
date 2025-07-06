@@ -93,6 +93,35 @@ function runTests() {
             FROM users u 
             LEFT JOIN orders o ON u.id = o.user_id`,
             expected: ['customer_name', 'total_orders', 'total_spent', 'avg_order_value', 'review_count']
+        },
+        {
+            name: 'SELECT with table.* (asterisk with table prefix)',
+            query: 'SELECT abc.*, def.name FROM table1 abc JOIN table2 def ON abc.id = def.id',
+            expected: ['all_columns', 'name']
+        },
+        {
+            name: 'SELECT with quoted column aliases',
+            query: 'SELECT name "Customer_Name", age "Customer_Age" FROM customers',
+            expected: ['Customer_Name', 'Customer_Age']
+        },
+        {
+            name: 'SELECT with complex CASE statement and quoted alias',
+            query: `SELECT name,
+                CASE 
+                    WHEN age >= 0 AND age <= 18 THEN 'young'
+                    WHEN age >= 19 AND age <= 65 THEN 'adult'
+                    ELSE 'senior'
+                END "Age_Group"
+                FROM users`,
+            expected: ['name', 'Age_Group']
+        },
+        {
+            name: 'SELECT with multiple CASE statements',
+            query: `SELECT 
+                CASE WHEN status = 1 THEN 'active' ELSE 'inactive' END status_desc,
+                CASE WHEN age >= 18 THEN 'adult' ELSE 'minor' END "age_category"
+                FROM users`,
+            expected: ['status_desc', 'age_category']
         }
     ];
 
