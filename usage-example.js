@@ -55,8 +55,38 @@ try {
     console.log(`Invalid query: ${error.message}\n`);
 }
 
-// Example 7: Using in a function
-console.log('Example 7: Using in a custom function');
+// Example 7: CASE statement with quoted alias
+console.log('Example 7: CASE statement with quoted alias');
+const query7 = `SELECT name,
+    CASE 
+        WHEN age >= 0 AND age <= 18 THEN 'young'
+        WHEN age >= 19 AND age <= 65 THEN 'adult'
+        ELSE 'senior'
+    END "Age_Group"
+    FROM users`;
+const columns7 = analyzer.analyzeQuery(query7);
+console.log(`Query: ${query7.replace(/\s+/g, ' ').trim()}`);
+console.log(`Result columns: [${columns7.join(', ')}]\n`);
+
+// Example 8: Table.* syntax
+console.log('Example 8: Table.* syntax');
+const query8 = 'SELECT abc.*, def.name FROM table1 abc JOIN table2 def ON abc.id = def.id';
+const columns8 = analyzer.analyzeQuery(query8);
+console.log(`Query: ${query8}`);
+console.log(`Result columns: [${columns8.join(', ')}]\n`);
+
+// Example 9: Complex query with multiple CASE statements
+console.log('Example 9: Multiple CASE statements');
+const query9 = `SELECT 
+    CASE WHEN status = 1 THEN 'active' ELSE 'inactive' END status_desc,
+    CASE WHEN age >= 18 THEN 'adult' ELSE 'minor' END "age_category"
+    FROM users`;
+const columns9 = analyzer.analyzeQuery(query9);
+console.log(`Query: ${query9.replace(/\s+/g, ' ').trim()}`);
+console.log(`Result columns: [${columns9.join(', ')}]\n`);
+
+// Example 10: Using in a function
+console.log('Example 10: Using in a custom function');
 function getQueryColumns(sqlQuery) {
     try {
         return analyzer.analyzeQuery(sqlQuery);
