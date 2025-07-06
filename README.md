@@ -2,6 +2,15 @@
 
 A JavaScript library that analyzes SQL SELECT queries and returns the column names that would be in the result set without executing the query.
 
+# NPM package
+
+[![npm version](https://img.shields.io/npm/v/sql-query-analyzer.svg)](https://www.npmjs.com/package/sql-query-analyzer)
+
+install this package as a dependency to your project
+```bash
+npm i sql-query-analyzer
+```
+
 ## Features
 
 - ✅ Analyzes SQL SELECT queries to extract column names
